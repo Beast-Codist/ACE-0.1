@@ -28,6 +28,7 @@ def create_record():
 
     return {"success": "База данных обновлена"}
 
+health_status = "Все окей"
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
