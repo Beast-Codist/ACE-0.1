@@ -16,6 +16,7 @@ def read_item(item: str, q: Union[str, None] = None):
 
 @app.get("/health", tags = ["Проверки"], summary = "Базовая проверка здоровья")
 async def health_check():
+    health_status = "Healthy!"
     return health_status
 
 
@@ -28,7 +29,7 @@ def create_record():
 
     return {"success": "База данных обновлена"}
 
-health_status = "Healthy!"
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
