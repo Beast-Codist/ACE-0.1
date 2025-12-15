@@ -14,6 +14,12 @@ def read_item(item: str, q: Union[str, None] = None):
     return result
 
 
+@app.get("/health", tags = ["Проверки"], summary = "Базовая проверка здоровья")
+async def health_check():
+    health_status = "Healthy!"
+    return health_status
+
+
 @app.post("/records", tags = ["Работа с JSON"], summary = "Записать сообщение из JSON в базу данных")
 def create_record():
     with open("test_data.json", "r", encoding="UTF=8") as rec_file:
@@ -22,6 +28,7 @@ def create_record():
         rec_file.close()
 
     return {"success": "База данных обновлена"}
+
 
 
 if __name__ == "__main__":
