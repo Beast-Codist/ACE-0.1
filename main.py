@@ -1,35 +1,25 @@
-from typing import Union
 from fastapi import FastAPI
-from db import mock_db
 import uvicorn
-import json
+from contextlib import asynccontextmanager
 
+from database import engine, Base
+from router import router  # Импортируем наш собранный роутер
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Управление таблицами при старте
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Закрытие сессий при выключении
+    await engine.dispose()
+    print("Соединение с БД закрыто корректно")
 
+app = FastAPI(lifespan=lifespan)
 
-@app.get("/items/{item}", tags = ["Работа с JSON"], summary = "Получить сообщение из базы данных")
-def read_item(item: str, q: Union[str, None] = None):
-    result = mock_db.get(item, "Ключ не найден")
-    return result
-
-
-@app.get("/health", tags = ["Проверки"], summary = "Базовая проверка здоровья")
-async def health_check():
-    health_status = "Healthy!"
-    return health_status
-
-
-@app.post("/records", tags = ["Работа с JSON"], summary = "Записать сообщение из JSON в базу данных")
-def create_record():
-    with open("test_data.json", "r", encoding="UTF=8") as rec_file:
-        data = json.load(rec_file)
-        mock_db.update(data)
-        rec_file.close()
-
-    return {"success": "База данных обновлена"}
-
-
+# Подключаем все эндпоинты одной строкой
+app.include_router(router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
